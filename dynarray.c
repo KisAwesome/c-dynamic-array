@@ -5,7 +5,7 @@
 struct Vector
 {
     char *data;
-    int size;
+    int capacity;
     int end;
     int element_width;
 };
@@ -34,7 +34,7 @@ Array CreateVector(int n, int width)
 
     Array arr;
     arr.data = ptr;
-    arr.size = n;
+    arr.capacity = n;
     arr.end = -1;
     arr.element_width = width;
     return arr;
@@ -45,18 +45,19 @@ void *ArrayAt(Array *vector, int index)
     return vector->data + index * vector->element_width;
 }
 
-int Push(const void *item, Array *arr)
+int Push(Array *arr, const void *item)
 {
     arr->end++;
-    if (arr->end == arr->size - 1)
+    if (arr->end == arr->capacity - 1)
     {
-        void *ptr = realloc(arr->data, (arr->size + 10) * arr->element_width);
-        arr->size += 10;
+        char *ptr = realloc(arr->data, (arr->capacity*1.5) * arr->element_width);
+        arr->capacity *=1.5;
         if (!ptr)
         {
             printf("realloc failed");
             exit(1);
         }
+        arr->data = ptr;
     }
 
     void *p = memcpy(ArrayAt(arr, arr->end),
@@ -87,6 +88,23 @@ int ArrayGet(Array *arr, int index, void *buff)
         return -1;
     }
     memcpy(buff, ArrayAt(arr, index), arr->element_width);
+    return 0;
+}
+
+int ArraySet(Array *arr, int index,void *item){
+    if (index > arr->end)
+    {
+        return -1;
+    }
+    void *p = memcpy(ArrayAt(arr, index),
+                     item,
+                     arr->element_width);
+
+    if (p == NULL)
+    {
+        printf("memcpy failed");
+        exit(1);
+    }
     return 0;
 }
 
@@ -136,30 +154,25 @@ int Free(Array *arr)
 
 int main()
 {
-    Array arr = CreateVector(1, sizeof(int));
+    Array ar = CreateVector(10, sizeof(int));
 
-    for (int i = 0; i < 20; ++i)
+    Array *arr= &ar;
+    for (int i = 0; i < 100; ++i)
     {
-        Push(&i, &arr);
+        Push(arr,&i);
     }
 
     int g;
-    
-    ArrayGet(&arr,15,&g);
+
+
+    int ds = 1023;
+    ArraySet(arr, 15, &ds);
+
+    ArrayGet(arr, 15, &g);
     printf("%i\n", g);
-
     Iterator iter;
-    // int v;
 
-    // Pop(&arr, NULL);
-    //     Pop(&arr, NULL);
-    int v;
-    // Pop(&arr, NULL);
-    // Pop(&arr, NULL);
-    Pop(&arr, &v);
-    printf("%i\n", v);
-
-    iter = CreateIterator(&arr);
+    iter = CreateIterator(arr);
     int buff;
 
     while (Next(&iter, &buff))
@@ -167,6 +180,6 @@ int main()
         printf("%d\n", buff);
     }
 
-    Free(&arr);
+    Free(arr);
     return 0;
 }
