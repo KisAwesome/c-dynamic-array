@@ -2,26 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct Vector
+typedef struct 
 {
     char *data;
     int capacity;
     int end;
     int element_width;
-};
+}Array;
 
-typedef struct Vector Array;
 
-struct _Iterator
+
+typedef struct
 {
     int current;
     Array *arr;
     int max;
-};
+} Iterator;
 
-typedef struct _Iterator Iterator;
 
-Array CreateVector(int n, int width)
+
+Array CreateArray(int n, int width)
 {
     char *ptr = NULL;
     ptr = calloc(n, width);
@@ -40,9 +40,9 @@ Array CreateVector(int n, int width)
     return arr;
 }
 
-void *ArrayAt(Array *vector, int index)
+void *ArrayAt(Array *arr, int index)
 {
-    return vector->data + index * vector->element_width;
+    return arr->data + index * arr->element_width;
 }
 
 int Push(Array *arr, const void *item)
@@ -50,8 +50,8 @@ int Push(Array *arr, const void *item)
     arr->end++;
     if (arr->end == arr->capacity - 1)
     {
-        char *ptr = realloc(arr->data, (arr->capacity*1.5) * arr->element_width);
-        arr->capacity *=1.5;
+        char *ptr = realloc(arr->data, (arr->capacity * 1.5) * arr->element_width);
+        arr->capacity *= 1.5;
         if (!ptr)
         {
             printf("realloc failed");
@@ -91,7 +91,8 @@ int ArrayGet(Array *arr, int index, void *buff)
     return 0;
 }
 
-int ArraySet(Array *arr, int index,void *item){
+int ArraySet(Array *arr, int index, void *item)
+{
     if (index > arr->end)
     {
         return -1;
@@ -114,8 +115,6 @@ int Next(Iterator *it, void *buff)
     {
         return 0;
     }
-
-    // *buff= it->data[it->current];
     int stat = ArrayGet(it->arr, it->current, buff);
     if (stat)
     {
@@ -147,23 +146,21 @@ int Pop(Array *arr, void *buff)
 }
 int Free(Array *arr)
 {
-
     free(arr->data);
     return 0;
 }
 
 int main()
 {
-    Array ar = CreateVector(10, sizeof(int));
+    Array ar = CreateArray(10, sizeof(int));
 
-    Array *arr= &ar;
+    Array *arr = &ar;
     for (int i = 0; i < 100; ++i)
     {
-        Push(arr,&i);
+        Push(arr, &i);
     }
 
     int g;
-
 
     int ds = 1023;
     ArraySet(arr, 15, &ds);
@@ -179,7 +176,6 @@ int main()
     {
         printf("%d\n", buff);
     }
-
     Free(arr);
     return 0;
 }
