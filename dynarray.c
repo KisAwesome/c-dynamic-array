@@ -2,24 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct 
+typedef struct
 {
     char *data;
     int capacity;
     int end;
     int element_width;
-}Array;
-
-
+} Array;
 
 typedef struct
 {
-    int current;
     Array *arr;
+    int current;
     int max;
 } Iterator;
-
-
 
 Array CreateArray(int n, int width)
 {
@@ -32,11 +28,7 @@ Array CreateArray(int n, int width)
         exit(0);
     }
 
-    Array arr;
-    arr.data = ptr;
-    arr.capacity = n;
-    arr.end = -1;
-    arr.element_width = width;
+    Array arr = {ptr, n, -1, width};
     return arr;
 }
 
@@ -50,8 +42,8 @@ int Push(Array *arr, const void *item)
     arr->end++;
     if (arr->end == arr->capacity - 1)
     {
-        char *ptr = realloc(arr->data, (arr->capacity * 1.5) * arr->element_width);
         arr->capacity *= 1.5;
+        char *ptr = realloc(arr->data, (arr->capacity) * arr->element_width);
         if (!ptr)
         {
             printf("realloc failed");
@@ -74,10 +66,7 @@ int Push(Array *arr, const void *item)
 
 Iterator CreateIterator(Array *array)
 {
-    Iterator it;
-    it.arr = array;
-    it.current = 0;
-    it.max = array->end;
+    Iterator it = {array, 0, array->end};
     return it;
 }
 
@@ -111,6 +100,11 @@ int ArraySet(Array *arr, int index, void *item)
 
 int Next(Iterator *it, void *buff)
 {
+    if (it->max != it->arr->end)
+    {
+        printf("ERROR: Array length changed during iteration\n");
+        exit(1);
+    }
     if (it->current > it->max)
     {
         return 0;
@@ -147,6 +141,7 @@ int Pop(Array *arr, void *buff)
 int Free(Array *arr)
 {
     free(arr->data);
+    arr->data = NULL;
     return 0;
 }
 
@@ -155,23 +150,22 @@ int main()
     Array ar = CreateArray(10, sizeof(int));
 
     Array *arr = &ar;
-    for (int i = 0; i < 100; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         Push(arr, &i);
     }
 
-    int g;
+    int g = 90;
 
     int ds = 1023;
     ArraySet(arr, 15, &ds);
 
     ArrayGet(arr, 15, &g);
     printf("%i\n", g);
-    Iterator iter;
-
-    iter = CreateIterator(arr);
+    Iterator iter = CreateIterator(arr);
+    Pop(arr, &g);
     int buff;
-
+    printf("\n\n");
     while (Next(&iter, &buff))
     {
         printf("%d\n", buff);
